@@ -12,86 +12,88 @@ import { XRControllerModelFactory } from './libs/three/jsm/XRControllerModelFact
 
 class App{
 	constructor(){
-		const container = document.createElement( 'div' );
-		document.body.appendChild( container );
+	const container = document.createElement('div');
+	document.body.appendChild(container);
 
-		this.assetsPath = './assets/';
-        
-		this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.01, 500 );
-		this.camera.position.set( 0, 1.6, 0 );
-        
-        this.dolly = new THREE.Object3D(  );
-        this.dolly.position.set(0, 0, 10);
-        this.dolly.add( this.camera );
-        this.dummyCam = new THREE.Object3D();
-        this.camera.add( this.dummyCam );
-        
-		this.scene = new THREE.Scene();
-        this.scene.add( this.dolly );
-        
-		const ambient = new THREE.HemisphereLight(0xFFFFFF, 0xAAAAAA, 0.8);
-		this.scene.add(ambient);
-		// === Background Music ===
-const listener = new THREE.AudioListener();
-this.camera.add(listener);
+	this.assetsPath = './assets/';
+	
+	this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 500);
+	this.camera.position.set(0, 1.6, 0);
+	
+	this.dolly = new THREE.Object3D();
+	this.dolly.position.set(0, 0, 10);
+	this.dolly.add(this.camera);
+	this.dummyCam = new THREE.Object3D();
+	this.camera.add(this.dummyCam);
+	
+	this.scene = new THREE.Scene();
+	this.scene.add(this.dolly);
 
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader();
+	const ambient = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.8);
+	this.scene.add(ambient);
 
-audioLoader.load('music.mp3.mp3', (buffer) => {
-  sound.setBuffer(buffer);
-  sound.setLoop(true);
-  sound.setVolume(0.3);
-  sound.play();
-});
+	// === Background Music ===
+	const listener = new THREE.AudioListener();
+	this.camera.add(listener);
+	const sound = new THREE.Audio(listener);
+	const audioLoader = new THREE.AudioLoader();
+	audioLoader.load('music.mp3.mp3', (buffer) => {
+		sound.setBuffer(buffer);
+		sound.setLoop(true);
+		sound.setVolume(0.3);
+		sound.play();
+	});
 
-		this.renderer = new THREE.WebGLRenderer({ antialias: true });
-this.renderer.setPixelRatio(window.devicePixelRatio);
-this.renderer.setSize(window.innerWidth, window.innerHeight);
-this.renderer.outputEncoding = THREE.sRGBEncoding;
-container.appendChild(this.renderer.domElement);
+	this.renderer = new THREE.WebGLRenderer({ antialias: true });
+	this.renderer.setPixelRatio(window.devicePixelRatio);
+	this.renderer.setSize(window.innerWidth, window.innerHeight);
+	this.renderer.outputEncoding = THREE.sRGBEncoding;
+	container.appendChild(this.renderer.domElement);
 
-// ✅ Only this one stats setup
-this.stats = new Stats();
-this.stats.dom.style.position = 'absolute';
-this.stats.dom.style.top = '0px';
-this.stats.dom.style.left = '0px';
-document.body.appendChild(this.stats.dom);
+	// Stats
+	this.stats = new Stats();
+	this.stats.dom.style.position = 'absolute';
+	this.stats.dom.style.top = '0px';
+	this.stats.dom.style.left = '0px';
+	document.body.appendChild(this.stats.dom);
 
-		this.setEnvironment();
-window.addEventListener('resize', this.resize.bind(this));
+	// Resize listener
+	window.addEventListener('resize', this.resize.bind(this));
 
-this.clock = new THREE.Clock();
-this.up = new THREE.Vector3(0, 1, 0);
-this.origin = new THREE.Vector3();
-this.workingVec3 = new THREE.Vector3();
-this.workingQuaternion = new THREE.Quaternion();
-this.raycaster = new THREE.Raycaster();
+	// Core variables
+	this.clock = new THREE.Clock();
+	this.up = new THREE.Vector3(0, 1, 0);
+	this.origin = new THREE.Vector3();
+	this.workingVec3 = new THREE.Vector3();
+	this.workingQuaternion = new THREE.Quaternion();
+	this.raycaster = new THREE.Raycaster();
+	this.immersive = false;
 
-this.loadingBar = new LoadingBar();
-this.loadCollege();
-this.immersive = false;
+	this.loadingBar = new LoadingBar();
+	this.loadCollege();
 
-fetch('./college.json')
-    .then(response => response.json())
-    .then(obj => {
-        this.boardShown = '';
-        this.boardData = obj;
-    });
+	// Environment map
+	const loader = new RGBELoader().setDataType(THREE.UnsignedByteType);
+	const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+	pmremGenerator.compileEquirectangularShader();
+	loader.load('./assets/hdr/venice_sunset_1k.hdr', (texture) => {
+		const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+		pmremGenerator.dispose();
+		this.scene.environment = envMap;
+	}, undefined, (err) => {
+		console.error('An error occurred setting the environment');
+	});
 
-this.setEnvironment();
-    
-        
-    }
-    
-  resize() {
-    if (!this.renderer.xr.isPresenting) {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+	// Load info board data
+	fetch('./college.json')
+		.then(response => response.json())
+		.then(obj => {
+			this.boardShown = '';
+			this.boardData = obj;
+		});
 }
-   
+
+
 	loadCollege(){
         
 		const loader = new GLTFLoader( ).setPath(this.assetsPath);
@@ -320,49 +322,58 @@ if (door1 && door2) {
         this.boardShown = name;
     }
 
+}
+
+	resize(){
+		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.updateProjectionMatrix();
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+
 	render( timestamp, frame ){
-        const dt = this.clock.getDelta();
-        
-        if (this.renderer.xr.isPresenting){
-            let moveGaze = false;
-        
-            if ( this.useGaze && this.gazeController!==undefined){
-                this.gazeController.update();
-                moveGaze = (this.gazeController.mode == GazeController.Modes.MOVE);
-            }
-        
-            if (this.selectPressed || moveGaze){
-                this.moveDolly(dt);
-                if (this.boardData){
-                    const scene = this.scene;
-                    const dollyPos = this.dolly.getWorldPosition( new THREE.Vector3() );
-                    let boardFound = false;
-                    Object.entries(this.boardData).forEach(([name, info]) => {
-                        const obj = scene.getObjectByName( name );
-                        if (obj !== undefined){
-                            const pos = obj.getWorldPosition( new THREE.Vector3() );
-                            if (dollyPos.distanceTo( pos ) < 3){
-                                boardFound = true;
-                                if ( this.boardShown !== name) this.showInfoboard( name, info, pos );
-                            }
-                        }
-                    });
-                    if (!boardFound){
-                        this.boardShown = "";
-                        this.ui.visible = false;
-                    }
-                }
-            }
-        }
-        
-        if ( this.immersive != this.renderer.xr.isPresenting){
-            this.resize();
-            this.immersive = this.renderer.xr.isPresenting;
-        }
-        
-        this.stats.update();
+		const dt = this.clock.getDelta();
+		
+		if (this.renderer.xr.isPresenting){
+			let moveGaze = false;
+		
+			if ( this.useGaze && this.gazeController!==undefined){
+				this.gazeController.update();
+				moveGaze = (this.gazeController.mode == GazeController.Modes.MOVE);
+			}
+		
+			if (this.selectPressed || moveGaze){
+				this.moveDolly(dt);
+				if (this.boardData){
+					const scene = this.scene;
+					const dollyPos = this.dolly.getWorldPosition( new THREE.Vector3() );
+					let boardFound = false;
+					Object.entries(this.boardData).forEach(([name, info]) => {
+						const obj = scene.getObjectByName( name );
+						if (obj !== undefined){
+							const pos = obj.getWorldPosition( new THREE.Vector3() );
+							if (dollyPos.distanceTo( pos ) < 3){
+								boardFound = true;
+								if ( this.boardShown !== name) this.showInfoboard( name, info, pos );
+							}
+						}
+					});
+					if (!boardFound){
+						this.boardShown = "";
+						this.ui.visible = false;
+					}
+				}
+			}
+		}
+		
+		if ( this.immersive != this.renderer.xr.isPresenting){
+			this.resize();
+			this.immersive = this.renderer.xr.isPresenting;
+		}
+		
+		this.stats.update();
 		this.renderer.render(this.scene, this.camera);
 	}
 }
 
 export { App };
+
