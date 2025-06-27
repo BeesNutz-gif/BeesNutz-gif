@@ -31,8 +31,13 @@ class App{
 //fog
 this.scene.fog = new THREE.Fog(0xaaaaaa, 10, 50);
 
-	const ambient = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.8);
+		//Cool Sci-Fi Tone
+	const ambient = new THREE.HemisphereLight(0x88ccff, 0x222244, 1.0); 
 	this.scene.add(ambient);
+
+	const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
+        directionalLight.position.set(5, 10, 7.5);
+        this.scene.add(directionalLight);	
 
 	// === Background Music ===
 	const listener = new THREE.AudioListener();
