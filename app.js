@@ -26,10 +26,10 @@ class App{
 	this.dummyCam = new THREE.Object3D();
 	this.camera.add(this.dummyCam);
 	
-	this.scene = new THREE.Scene();
-	this.scene.add(this.dolly);
+	//this.scene = new THREE.Scene();
+	//this.scene.add(this.dolly);
 //fog
-this.scene.fog = new THREE.Fog(0xaaaaaa, 30, 120);
+//this.scene.fog = new THREE.Fog(0xaaaaaa, 30, 120);
 
 		//Cool Sci-Fi Tone
 	const ambient = new THREE.HemisphereLight(0x88ccff, 0x222244, 1.0); 
