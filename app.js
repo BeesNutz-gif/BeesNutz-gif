@@ -25,6 +25,8 @@ class App{
         this.camera.add( this.dummyCam );
 
 		this.scene = new THREE.Scene();
+		this.scene.background = null; // Kill fallback background
+
         this.scene.add( this.dolly );
 
 		const ambient = new THREE.HemisphereLight(0xFFFFFF, 0xAAAAAA, 0.8);
@@ -73,25 +75,12 @@ class App{
             });
 	}
 
-    setEnvironment(){
-        const loader = new RGBELoader().setDataType( THREE.UnsignedByteType );
-        const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
-        pmremGenerator.compileEquirectangularShader();
+   setEnvironment(){
+    this.scene.environment = null;
+    this.scene.background = null;
 
-        const self = this;
-        loader.load( './assets/hdr/new_sky.hdr', ( texture ) => {
-          const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
-          pmremGenerator.dispose();
-          self.scene.environment = envMap;
-          self.scene.background = envMap;
-        });
-    }
 
-    resize(){
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize( window.innerWidth, window.innerHeight );
-    }
+}
 
 	loadCollege(){
 	const loader = new GLTFLoader().setPath(this.assetsPath);
@@ -346,6 +335,7 @@ class App{
             this.resize();
             this.immersive = this.renderer.xr.isPresenting;
         }
+		console.log("scene.background:", this.scene.background);
 		this.renderer.render(this.scene, this.camera);
 	}
 }
