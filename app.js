@@ -1,6 +1,6 @@
 import * as THREE from './libs/three/three.module.js';
 import { GLTFLoader } from './libs/three/jsm/GLTFLoader.js';
-import { DRACOLoader } from './libs/three/jsm/DRACOLoader.js';
+import { DRACOLoader } from '././libs/three/jsm/DRACOLoader.js';
 import { RGBELoader } from './libs/three/jsm/RGBELoader.js';
 import { LoadingBar } from './libs/LoadingBar.js';
 import { VRButton } from './libs/VRButton.js';
@@ -9,28 +9,28 @@ import { GazeController } from './libs/GazeController.js';
 import { XRControllerModelFactory } from './libs/three/jsm/XRControllerModelFactory.js';
 
 class App{
-	constructor(){
-		const container = document.createElement( 'div' );
-		document.body.appendChild( container );
+    constructor(){
+        const container = document.createElement('div');
+        document.body.appendChild(container);
 
-		this.assetsPath = './assets/';
+        this.assetsPath = './assets/';
 
-		this.camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.01, 500 );
-		this.camera.position.set( 0, 1.6, 0 );
+        this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 500);
+        this.camera.position.set(0, 1.6, 0);
 
         this.dolly = new THREE.Object3D();
         this.dolly.position.set(0, 0, 10);
-        this.dolly.add( this.camera );
+        this.dolly.add(this.camera);
         this.dummyCam = new THREE.Object3D();
-        this.camera.add( this.dummyCam );
+        this.camera.add(this.dummyCam);
 
-		this.scene = new THREE.Scene();
-		this.scene.background = null; // Kill fallback background
+        this.scene = new THREE.Scene();
+        this.scene.background = null;
 
-        this.scene.add( this.dolly );
+        this.scene.add(this.dolly);
 
-		const ambient = new THREE.HemisphereLight(0xFFFFFF, 0xAAAAAA, 0.8);
-		this.scene.add(ambient);
+        const ambient = new THREE.HemisphereLight(0xFFFFFF, 0xAAAAAA, 0.8);
+        this.scene.add(ambient);
 
         const listener = new THREE.AudioListener();
         this.camera.add(listener);
@@ -39,118 +39,118 @@ class App{
         const audioLoader = new THREE.AudioLoader();
 
         audioLoader.load('music.mp3.mp3', (buffer) => {
-          sound.setBuffer(buffer);
-          sound.setLoop(true);
-          sound.setVolume(0.3);
-        });
-        document.body.addEventListener('click', () => {
-          if (!sound.isPlaying) sound.play();
+            sound.setBuffer(buffer);
+            sound.setLoop(true);
+            sound.setVolume(0.3);
         });
 
-		this.renderer = new THREE.WebGLRenderer({ antialias: true });
-		this.renderer.setPixelRatio( window.devicePixelRatio );
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
-		this.renderer.outputEncoding = THREE.sRGBEncoding;
-		container.appendChild( this.renderer.domElement );
+        document.body.addEventListener('click', () => {
+            if (!sound.isPlaying) sound.play();
+        });
+
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        container.appendChild(this.renderer.domElement);
         this.setEnvironment();
 
         window.addEventListener('resize', () => this.resize());
 
         this.clock = new THREE.Clock();
-        this.up = new THREE.Vector3(0,1,0);
+        this.up = new THREE.Vector3(0, 1, 0);
         this.origin = new THREE.Vector3();
         this.workingVec3 = new THREE.Vector3();
         this.workingQuaternion = new THREE.Quaternion();
         this.raycaster = new THREE.Raycaster();
 
-		this.loadingBar = new LoadingBar();
-		this.loadCollege();
+        this.loadingBar = new LoadingBar();
+        this.loadCollege();
         this.immersive = false;
-        const self = this;
+
         fetch('./college.json')
             .then(response => response.json())
-            .then(obj =>{
-                self.boardShown = '';
-                self.boardData = obj;
+            .then(obj => {
+                this.boardShown = '';
+                this.boardData = obj;
             });
-	}
+    }
 
     setEnvironment(){
         this.scene.environment = null;
         this.scene.background = null;
     }
 
-	loadCollege(){
-		const loader = new GLTFLoader().setPath(this.assetsPath);
-		const dracoLoader = new DRACOLoader();
-		dracoLoader.setDecoderPath('./libs/three/js/draco/');
-		loader.setDRACOLoader(dracoLoader);
+    loadCollege(){
+        const loader = new GLTFLoader().setPath(this.assetsPath);
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('./libs/three/js/draco/');
+        loader.setDRACOLoader(dracoLoader);
 
-		const self = this;
-		loader.load('college.glb', function (gltf) {
-			if (!gltf.scene || gltf.scene.children.length === 0) {
-				console.error("❌ GLB file loaded but has no children.");
-				return;
-			}
+        loader.load('college.glb', (gltf) => {
+            if (!gltf.scene || gltf.scene.children.length === 0) {
+                console.error("❌ GLB file loaded but has no children.");
+                return;
+            }
 
-			const college = gltf.scene.children[0];
+            const college = gltf.scene.children[0];
 
-			college.traverse(obj => {
-				const name = obj.name.toLowerCase();
-				if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
-					console.warn(`⚠️ Removing possible sky object: ${obj.name}`);
-					if (obj.parent) obj.parent.remove(obj);
-				}
-			});
+            college.traverse(obj => {
+                const name = obj.name.toLowerCase();
+                if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
+                    console.warn(`⚠️ Removing possible sky object: ${obj.name}`);
+                    if (obj.parent) obj.parent.remove(obj);
+                }
+            });
 
-			college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
+            college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
 
-			self.scene.add(college);
+            this.scene.add(college);
 
-			college.traverse(function (child) {
-				if (child.isMesh) {
-					const meshName = child.name.toLowerCase();
-					const matName = child.material.name.toLowerCase();
+            college.traverse((child) => {
+                if (child.isMesh) {
+                    const meshName = child.name.toLowerCase();
+                    const matName = child.material.name.toLowerCase();
 
-					if (child.name.indexOf("PROXY") != -1) {
-						child.material.visible = false;
-						self.proxy = child;
-					} else if (matName.includes("glass")) {
-						child.material.opacity = 0.1;
-						child.material.transparent = true;
-					}
-				}
-			});
+                    if (child.name.indexOf("PROXY") != -1) {
+                        child.material.visible = false;
+                        this.proxy = child;
+                    } else if (matName.includes("glass")) {
+                        child.material.opacity = 0.1;
+                        child.material.transparent = true;
+                    }
+                }
+            });
 
-			const door1 = college.getObjectByName("LobbyShop_Door__1_");
-			const door2 = college.getObjectByName("LobbyShop_Door__2_");
+            const door1 = college.getObjectByName("LobbyShop_Door__1_");
+            const door2 = college.getObjectByName("LobbyShop_Door__2_");
 
-			if (door1 && door2) {
-				const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
-				const obj = new THREE.Object3D();
-				obj.name = "LobbyShop";
-				obj.position.copy(pos);
-				college.add(obj);
-			}
+            if (door1 && door2) {
+                const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
+                const obj = new THREE.Object3D();
+                obj.name = "LobbyShop";
+                obj.position.copy(pos);
+                college.add(obj);
+            }
 
-			const doorBlock = new THREE.Mesh(
-				new THREE.BoxGeometry(2, 2, 0.2),
-				new THREE.MeshBasicMaterial({ visible: false })
-			);
-			doorBlock.position.set(1, 1, -3);
-			doorBlock.name = "NoEntryWall";
-			self.scene.add(doorBlock);
-			self.proxy = doorBlock;
+            const doorBlock = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 2, 0.2),
+                new THREE.MeshBasicMaterial({ visible: false })
+            );
+            doorBlock.position.set(1, 1, -3);
+            doorBlock.name = "NoEntryWall";
+            this.scene.add(doorBlock);
+            this.proxy = doorBlock;
 
-			self.loadingBar.visible = false;
-			self.setupXR();
+            this.loadingBar.visible = false;
+            this.setupXR();
 
-		}, function (xhr) {
-			self.loadingBar.progress = (xhr.loaded / xhr.total);
-		}, function (error) {
-			console.error('An error happened while loading college.glb:', error);
-		});
-	}
+        }, (xhr) => {
+            this.loadingBar.progress = (xhr.loaded / xhr.total);
+        }, (error) => {
+            console.error('An error happened while loading college.glb:', error);
+        });
+    }
 
 }
 
