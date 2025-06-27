@@ -332,7 +332,7 @@ render( timestamp, frame ){
     const dt = this.clock.getDelta();
 
     if (this.renderer.xr.isPresenting){
-        // ... your existing VR logic
+        // your VR logic here
     }
 
     if ( this.immersive != this.renderer.xr.isPresenting){
@@ -340,8 +340,12 @@ render( timestamp, frame ){
         this.immersive = this.renderer.xr.isPresenting;
     }
 
-   if (this.stats.dom && (this.stats.dom.clientWidth === 0 || this.stats.dom.clientHeight === 0)) return;
-
+    // Check canvas size before update to avoid InvalidStateError
+    const statsCanvas = this.stats.dom.querySelector('canvas');
+    if (!statsCanvas || statsCanvas.width === 0 || statsCanvas.height === 0) {
+        // Skip updating stats if canvas size is zero
+        return;
+    }
 
     this.stats.update();
     this.renderer.render(this.scene, this.camera);
