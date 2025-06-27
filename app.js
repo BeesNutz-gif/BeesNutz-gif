@@ -98,12 +98,14 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
         } );
     }
     
-    resize(){
+  resize() {
+    if (!this.renderer.xr.isPresenting) {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize( window.innerWidth, window.innerHeight );  
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    
+}
+   
 	loadCollege(){
         
 		const loader = new GLTFLoader( ).setPath(this.assetsPath);
