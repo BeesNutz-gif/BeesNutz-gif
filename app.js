@@ -152,14 +152,11 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 
           
 	},	
-			// called while loading is progressing
-			function ( xhr ) {
-				self.loadingBar.progress = (xhr.loaded / xhr.total);
-				
-			},
-			// called when loading has errors
-			function ( error ) {
-				console.log( 'An error happened',  error );
+			(xhr) => {
+        self.loadingBar.progress = (xhr.loaded / xhr.total);
+    },
+    (error) => {
+        console.log('An error happened', error);
 
 			}
 		);
