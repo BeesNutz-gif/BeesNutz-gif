@@ -150,47 +150,7 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
                 }
             });
 
-            const door1 = college.getObjectByName("LobbyShop_Door__1_");
-            const door2 = college.getObjectByName("LobbyShop_Door__2_");
-
-            if (door1 && door2) {
-                const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
-                const obj = new THREE.Object3D();
-                obj.name = "LobbyShop";
-                obj.position.copy(pos);
-                college.add(obj);
-            }
-
-            self.loadingBar.visible = false;
-            self.setupXR();
-        },
-        // onProgress callback
-        function (xhr) {
-            self.loadingBar.progress = (xhr.loaded / xhr.total);
-        },
-        // onError callback
-        function (error) {
-            console.log('An error happened', error);
-        }
-    );
-}
-
-                       
-               const door1 = college.getObjectByName("LobbyShop_Door__1_");
-const door2 = college.getObjectByName("LobbyShop_Door__2_");
-
-if (door1 && door2) {
-    const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
-    const obj = new THREE.Object3D();
-    obj.name = "LobbyShop";
-    obj.position.copy(pos);
-    college.add(obj);
-}
-
-                
-                self.loadingBar.visible = false;
-			
-                self.setupXR();
+           //deleted
 			},
 			// called while loading is progressing
 			function ( xhr ) {
