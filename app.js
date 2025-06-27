@@ -3,7 +3,6 @@ import * as THREE from './libs/three/three.module.js';
 import { GLTFLoader } from './libs/three/jsm/GLTFLoader.js';
 import { DRACOLoader } from './libs/three/jsm/DRACOLoader.js';
 import { RGBELoader } from './libs/three/jsm/RGBELoader.js';
-import { Stats } from './libs/stats.module.js';
 import { LoadingBar } from './libs/LoadingBar.js';
 import { VRButton } from './libs/VRButton.js';
 import { CanvasUI } from './libs/CanvasUI.js';
@@ -61,8 +60,6 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
         this.workingQuaternion = new THREE.Quaternion();
         this.raycaster = new THREE.Raycaster();
         
-        this.stats = new Stats();
-		container.appendChild( this.stats.dom );
         
 		this.loadingBar = new LoadingBar();
 		
@@ -368,7 +365,7 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
             this.immersive = this.renderer.xr.isPresenting;
         }
         
-        this.stats.update();
+        
 		this.renderer.render(this.scene, this.camera);
 	}
 }
