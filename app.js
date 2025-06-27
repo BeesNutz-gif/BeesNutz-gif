@@ -84,80 +84,88 @@ class App {
         dracoLoader.setDecoderPath('./libs/three/js/draco/');
         loader.setDRACOLoader(dracoLoader);
 
-        loader.load('college.glb', (gltf) => {
-            if (!gltf.scene || !gltf.scene.children || gltf.scene.children.length === 0) {
-                console.error("❌ GLB file loaded but has no children.");
-                return;
-            }
-
-            let college = null;
-            gltf.scene.traverse(obj => {
-                if (!college && obj.type === 'Group') {
-                    college = obj;
+        loader.load(
+            'college.glb',
+            (gltf) => {
+                const sceneRoot = gltf.scene;
+                if (!sceneRoot) {
+                    console.error("❌ GLB file loaded but 'scene' is missing.");
+                    return;
                 }
-            });
 
-            if (!college) {
-                console.error("❌ Could not find the 'college' object in the GLB file.");
-                return;
-            }
+                let college = null;
+                sceneRoot.traverse(obj => {
+                    if (!college && obj.type === "Group") {
+                        college = obj;
+                    }
+                });
 
-            college.traverse(obj => {
-                const name = obj.name.toLowerCase();
-                if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
-                    console.warn(`⚠️ Removing possible sky object: ${obj.name}`);
-                    if (obj.parent) obj.parent.remove(obj);
-                }
-            });
-
-            college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
-            this.scene.add(college);
-
-            college.traverse(child => {
-                if (child.isMesh) {
-                    const meshName = child.name.toLowerCase();
-                    const matName = child.material.name.toLowerCase();
-
-                    if (child.name.indexOf("PROXY") !== -1) {
-                        child.material.visible = false;
-                        this.proxy = child;
-                    } else if (matName.includes("glass")) {
-                        child.material.opacity = 0.1;
-                        child.material.transparent = true;
+                if (!college) {
+                    college = sceneRoot.children[0];
+                    if (!college) {
+                        console.error("❌ GLB scene has no children.");
+                        return;
                     }
                 }
-            });
 
-            const door1 = college.getObjectByName("LobbyShop_Door__1_");
-            const door2 = college.getObjectByName("LobbyShop_Door__2_");
+                college.traverse(obj => {
+                    const name = obj.name?.toLowerCase() || "";
+                    if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
+                        console.warn(`⚠️ Removing possible sky object: ${obj.name}`);
+                        if (obj.parent) obj.parent.remove(obj);
+                    }
+                });
 
-            if (door1 && door2) {
-                const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
-                const obj = new THREE.Object3D();
-                obj.name = "LobbyShop";
-                obj.position.copy(pos);
-                college.add(obj);
+                this.scene.add(college);
+
+                college.traverse(child => {
+                    if (child.isMesh) {
+                        const meshName = child.name?.toLowerCase() || "";
+                        const matName = child.material?.name?.toLowerCase() || "";
+
+                        if (meshName.includes("proxy")) {
+                            child.material.visible = false;
+                            this.proxy = child;
+                        } else if (matName.includes("glass")) {
+                            child.material.opacity = 0.1;
+                            child.material.transparent = true;
+                        }
+                    }
+                });
+
+                const door1 = college.getObjectByName("LobbyShop_Door__1_");
+                const door2 = college.getObjectByName("LobbyShop_Door__2_");
+
+                if (door1 && door2) {
+                    const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
+                    const obj = new THREE.Object3D();
+                    obj.name = "LobbyShop";
+                    obj.position.copy(pos);
+                    college.add(obj);
+                }
+
+                const doorBlock = new THREE.Mesh(
+                    new THREE.BoxGeometry(2, 2, 0.2),
+                    new THREE.MeshBasicMaterial({ visible: false })
+                );
+                doorBlock.position.set(1, 1, -3);
+                doorBlock.name = "NoEntryWall";
+                this.scene.add(doorBlock);
+                this.proxy = doorBlock;
+
+                this.loadingBar.visible = false;
+                this.setupXR();
+            },
+            (xhr) => {
+                this.loadingBar.progress = xhr.loaded / xhr.total;
+            },
+            (error) => {
+                console.error("❌ Error loading college.glb:", error);
             }
-
-            const doorBlock = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 2, 0.2),
-                new THREE.MeshBasicMaterial({ visible: false })
-            );
-            doorBlock.position.set(1, 1, -3);
-            doorBlock.name = "NoEntryWall";
-            this.scene.add(doorBlock);
-            this.proxy = doorBlock;
-
-            this.loadingBar.visible = false;
-            this.setupXR();
-        },
-        (xhr) => {
-            this.loadingBar.progress = (xhr.loaded / xhr.total);
-        },
-        (error) => {
-            console.error('❌ Error loading college.glb:', error);
-        });
+        );
     }
+
+}
 
     resize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
