@@ -94,37 +94,79 @@ class App{
     }
 
 	loadCollege(){
-		const loader = new GLTFLoader().setPath(this.assetsPath);
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( './libs/three/js/draco/' );
-        loader.setDRACOLoader( dracoLoader );
+	const loader = new GLTFLoader().setPath(this.assetsPath);
+	const dracoLoader = new DRACOLoader();
+	dracoLoader.setDecoderPath('./libs/three/js/draco/');
+	loader.setDRACOLoader(dracoLoader);
 
-        const self = this;
-		loader.load('college.glb', function ( gltf ) {
-            const college = gltf.scene.children[0];
+	const self = this;
+	loader.load('college.glb', function (gltf) {
+		const college = gltf.scene.children[0];
 
-            // LOGGING LINE TO IDENTIFY SKY MESH
-            college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
+		// ☢️ Hard remove any sky/dome/background object
+		college.traverse(obj => {
+			const name = obj.name.toLowerCase();
+			if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
+				console.warn(`⚠️ Removing possible sky object: ${obj.name}`);
+				if (obj.parent) obj.parent.remove(obj);
+			}
+		});
 
-			self.scene.add( college );
-			college.traverse(function (child) {
-                if (child.isMesh) {
-                    const meshName = child.name.toLowerCase();
-                    const matName = child.material.name.toLowerCase();
-                    if (child.name.indexOf("PROXY") != -1) {
-                        child.material.visible = false;
-                        self.proxy = child;
-                    } else if (matName.includes("glass")) {
-                        child.material.opacity = 0.1;
-                        child.material.transparent = true;
-                    } else if (
-                        (meshName.includes("sky") || meshName.includes("dome") || meshName.includes("background")) &&
-                        (matName.includes("sky") || matName.includes("dome") || matName.includes("background"))
-                    ) {
-                        child.visible = false;
-                    }
-                }
-            });
+		// Optional: confirm what's still in the scene
+		college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
+
+		self.scene.add(college);
+
+		college.traverse(function (child) {
+			if (child.isMesh) {
+				const meshName = child.name.toLowerCase();
+				const matName = child.material.name.toLowerCase();
+
+				if (child.name.indexOf("PROXY") != -1) {
+					child.material.visible = false;
+					self.proxy = child;
+
+				} else if (matName.includes("glass")) {
+					child.material.opacity = 0.1;
+					child.material.transparent = true;
+
+				} else if (
+					(meshName.includes("sky") || meshName.includes("dome") || meshName.includes("background")) &&
+					(matName.includes("sky") || matName.includes("dome") || matName.includes("background"))
+				) {
+					child.visible = false; // Shouldn't matter anymore, but just in case
+				}
+			}
+		});
+
+		const door1 = college.getObjectByName("LobbyShop_Door__1_");
+		const door2 = college.getObjectByName("LobbyShop_Door__2_");
+		const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
+		const obj = new THREE.Object3D();
+		obj.name = "LobbyShop";
+		obj.position.copy(pos);
+		college.add(obj);
+
+		// 🚫 Add invisible wall
+		const doorBlock = new THREE.Mesh(
+			new THREE.BoxGeometry(2, 2, 0.2),
+			new THREE.MeshBasicMaterial({ visible: false })
+		);
+		doorBlock.position.set(1, 1, -3); // Adjust as needed
+		doorBlock.name = "NoEntryWall";
+		self.scene.add(doorBlock);
+		self.proxy = doorBlock;
+
+		self.loadingBar.visible = false;
+		self.setupXR();
+
+	}, function (xhr) {
+		self.loadingBar.progress = (xhr.loaded / xhr.total);
+	}, function (error) {
+		console.log('An error happened');
+	});
+}
+
 
             const door1 = college.getObjectByName("LobbyShop_Door__1_");
             const door2 = college.getObjectByName("LobbyShop_Door__2_");
