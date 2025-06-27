@@ -34,14 +34,25 @@ class App{
 
 	// === Background Music ===
 	const listener = new THREE.AudioListener();
-	this.camera.add(listener);
-	const sound = new THREE.Audio(listener);
-	const audioLoader = new THREE.AudioLoader();
-	audioLoader.load('music.mp3.mp3', (buffer) => {
-		sound.setBuffer(buffer);
-		sound.setLoop(true);
-		sound.setVolume(0.3);
+this.camera.add(listener);
+const sound = new THREE.Audio(listener);
+this.sound = sound; // optional: access later
+
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load('music.mp3.mp3', (buffer) => {
+	sound.setBuffer(buffer);
+	sound.setLoop(true);
+	sound.setVolume(0.3);
+
+	const resumeAudio = () => {
+		if (THREE.AudioContext.getContext().state === 'suspended') {
+			THREE.AudioContext.getContext().resume();
+		}
 		sound.play();
+		window.removeEventListener('click', resumeAudio);
+	};
+
+	window.addEventListener('click', resumeAudio);
 	});
 
 	this.renderer = new THREE.WebGLRenderer({ antialias: true });
