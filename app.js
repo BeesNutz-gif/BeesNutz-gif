@@ -127,16 +127,26 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 				
 				college.traverse(function (child) {
     				if (child.isMesh){
+					console.log(child.name, "→", child.material.name);
+					
 						if (child.name.indexOf("PROXY")!=-1){
 							child.material.visible = false;
 							self.proxy = child;
 						}else if (child.material.name.indexOf('Glass')!=-1){
                             child.material.opacity = 0.1;
                             child.material.transparent = true;
-                       }else if (child.material.name.toLowerCase().includes("sky")){
-    console.log("⚠️ Hiding mesh:", child.name);
-    child.visible = false;
+                      }else if (child.material.name.toLowerCase().includes("sky")){
+    const safeName = child.name.toLowerCase();
+    
+    // Only hide if the object name sounds like a sky dome or background
+    if (safeName.includes("sky") || safeName.includes("dome") || safeName.includes("background")) {
+        console.log("✅ Hiding actual sky mesh:", child.name);
+        child.visible = false;
+    } else {
+        console.log("⛔️ Not hiding:", child.name);
+    }
 }
+
 
 					}
 				});
