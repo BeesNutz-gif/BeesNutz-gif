@@ -1,6 +1,6 @@
 import * as THREE from './libs/three/three.module.js';
 import { GLTFLoader } from './libs/three/jsm/GLTFLoader.js';
-import { DRACOLoader } from '././libs/three/jsm/DRACOLoader.js';
+import { DRACOLoader } from './libs/three/jsm/DRACOLoader.js';
 import { RGBELoader } from './libs/three/jsm/RGBELoader.js';
 import { LoadingBar } from './libs/LoadingBar.js';
 import { VRButton } from './libs/VRButton.js';
@@ -8,8 +8,8 @@ import { CanvasUI } from './libs/CanvasUI.js';
 import { GazeController } from './libs/GazeController.js';
 import { XRControllerModelFactory } from './libs/three/jsm/XRControllerModelFactory.js';
 
-class App{
-    constructor(){
+class App {
+    constructor() {
         const container = document.createElement('div');
         document.body.appendChild(container);
 
@@ -26,7 +26,6 @@ class App{
 
         this.scene = new THREE.Scene();
         this.scene.background = null;
-
         this.scene.add(this.dolly);
 
         const ambient = new THREE.HemisphereLight(0xFFFFFF, 0xAAAAAA, 0.8);
@@ -37,13 +36,11 @@ class App{
 
         const sound = new THREE.Audio(listener);
         const audioLoader = new THREE.AudioLoader();
-
         audioLoader.load('music.mp3.mp3', (buffer) => {
             sound.setBuffer(buffer);
             sound.setLoop(true);
             sound.setVolume(0.3);
         });
-
         document.body.addEventListener('click', () => {
             if (!sound.isPlaying) sound.play();
         });
@@ -53,9 +50,9 @@ class App{
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.outputEncoding = THREE.sRGBEncoding;
         container.appendChild(this.renderer.domElement);
-        this.setEnvironment();
 
-        window.addEventListener('resize', () => this.resize());
+        this.setEnvironment();
+        window.addEventListener('resize', this.resize.bind(this));
 
         this.clock = new THREE.Clock();
         this.up = new THREE.Vector3(0, 1, 0);
@@ -76,12 +73,12 @@ class App{
             });
     }
 
-    setEnvironment(){
+    setEnvironment() {
         this.scene.environment = null;
         this.scene.background = null;
     }
 
-    loadCollege(){
+    loadCollege() {
         const loader = new GLTFLoader().setPath(this.assetsPath);
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('./libs/three/js/draco/');
@@ -104,10 +101,9 @@ class App{
             });
 
             college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
-
             this.scene.add(college);
 
-            college.traverse((child) => {
+            college.traverse(child => {
                 if (child.isMesh) {
                     const meshName = child.name.toLowerCase();
                     const matName = child.material.name.toLowerCase();
@@ -144,25 +140,29 @@ class App{
 
             this.loadingBar.visible = false;
             this.setupXR();
-
-        }, (xhr) => {
+        },
+        (xhr) => {
             this.loadingBar.progress = (xhr.loaded / xhr.total);
-        }, (error) => {
+        },
+        (error) => {
             console.error('An error happened while loading college.glb:', error);
         });
     }
 
-}
+    resize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
 
     setupXR() {
         this.renderer.xr.enabled = true;
         const btn = new VRButton(this.renderer);
-        const self = this;
-        const timeoutId = setTimeout(() => self.useGaze = true, 2000);
 
+        const timeoutId = setTimeout(() => this.useGaze = true, 2000);
         const onSelectStart = function () { this.userData.selectPressed = true; };
         const onSelectEnd = function () { this.userData.selectPressed = false; };
-        const onConnected = function () { clearTimeout(timeoutId); };
+        const onConnected = () => clearTimeout(timeoutId);
 
         this.controllers = this.buildControllers(this.dolly);
         this.controllers.forEach((controller) => {
@@ -181,13 +181,14 @@ class App{
 
         this.ui = new CanvasUI(content, config);
         this.scene.add(this.ui.mesh);
-
         this.renderer.setAnimationLoop(this.render.bind(this));
     }
 
     buildControllers(parent = this.scene) {
         const controllerModelFactory = new XRControllerModelFactory();
-        const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
+        const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)
+        ]);
         const line = new THREE.Line(geometry);
         line.scale.z = 0;
         const controllers = [];
@@ -229,12 +230,14 @@ class App{
         dir.applyMatrix4(this.dolly.matrix).normalize();
         this.raycaster.set(pos, dir);
         intersect = this.raycaster.intersectObject(this.proxy);
-        if (intersect.length > 0 && intersect[0].distance < wallLimit) this.dolly.translateX(wallLimit - intersect[0].distance);
+        if (intersect.length > 0 && intersect[0].distance < wallLimit)
+            this.dolly.translateX(wallLimit - intersect[0].distance);
         dir.set(1, 0, 0);
         dir.applyMatrix4(this.dolly.matrix).normalize();
         this.raycaster.set(pos, dir);
         intersect = this.raycaster.intersectObject(this.proxy);
-        if (intersect.length > 0 && intersect[0].distance < wallLimit) this.dolly.translateX(intersect[0].distance - wallLimit);
+        if (intersect.length > 0 && intersect[0].distance < wallLimit)
+            this.dolly.translateX(intersect[0].distance - wallLimit);
         dir.set(0, -1, 0);
         pos.y += 1.5;
         this.raycaster.set(pos, dir);
@@ -244,11 +247,11 @@ class App{
     }
 
     get selectPressed() {
-        return (this.controllers !== undefined && (this.controllers[0].userData.selectPressed || this.controllers[1].userData.selectPressed));
+        return (this.controllers && (this.controllers[0].userData.selectPressed || this.controllers[1].userData.selectPressed));
     }
 
     showInfoboard(name, info, pos) {
-        if (this.ui === undefined) return;
+        if (!this.ui) return;
         this.ui.position.copy(pos).add(new THREE.Vector3(0, 1.3, 0));
         const camPos = this.dummyCam.getWorldPosition(new THREE.Vector3());
         this.ui.updateElement('name', info.name);
@@ -263,9 +266,9 @@ class App{
         const dt = this.clock.getDelta();
         if (this.renderer.xr.isPresenting) {
             let moveGaze = false;
-            if (this.useGaze && this.gazeController !== undefined) {
+            if (this.useGaze && this.gazeController) {
                 this.gazeController.update();
-                moveGaze = (this.gazeController.mode == GazeController.Modes.MOVE);
+                moveGaze = (this.gazeController.mode === GazeController.Modes.MOVE);
             }
             if (this.selectPressed || moveGaze) {
                 this.moveDolly(dt);
@@ -282,18 +285,17 @@ class App{
                     this.ui.visible = false;
                 }
                 if (this.boardData) {
-                    const scene = this.scene;
                     let boardFound = false;
-                    Object.entries(this.boardData).forEach(([name, info]) => {
-                        const obj = scene.getObjectByName(name);
-                        if (obj !== undefined) {
+                    for (const [name, info] of Object.entries(this.boardData)) {
+                        const obj = this.scene.getObjectByName(name);
+                        if (obj) {
                             const pos = obj.getWorldPosition(new THREE.Vector3());
                             if (dollyPos.distanceTo(pos) < 3) {
                                 boardFound = true;
                                 if (this.boardShown !== name) this.showInfoboard(name, info, pos);
                             }
                         }
-                    });
+                    }
                     if (!boardFound && this.boardShown !== "") {
                         this.boardShown = "";
                         this.ui.visible = false;
@@ -301,7 +303,7 @@ class App{
                 }
             }
         }
-        if (this.immersive != this.renderer.xr.isPresenting) {
+        if (this.immersive !== this.renderer.xr.isPresenting) {
             this.resize();
             this.immersive = this.renderer.xr.isPresenting;
         }
