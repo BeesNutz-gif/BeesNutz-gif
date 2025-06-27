@@ -126,30 +126,32 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 				self.scene.add( college );
 				
 				college.traverse(function (child) {
-    				if (child.isMesh){
-					console.log(child.name, "→", child.material.name);
-					
-						if (child.name.indexOf("PROXY")!=-1){
-							child.material.visible = false;
-							self.proxy = child;
-						}else if (child.material.name.indexOf('Glass')!=-1){
-                            child.material.opacity = 0.1;
-                            child.material.transparent = true;
-                      }else if (child.material.name.toLowerCase().includes("sky")){
-    const safeName = child.name.toLowerCase();
-    
-    // Only hide if the object name sounds like a sky dome or background
-    if (safeName.includes("sky") || safeName.includes("dome") || safeName.includes("background")) {
-        console.log("✅ Hiding actual sky mesh:", child.name);
-        child.visible = false;
-    } else {
-        console.log("⛔️ Not hiding:", child.name);
+    if (child.isMesh) {
+        console.log(child.name, "→", child.material.name); // helps you debug
+
+        const meshName = child.name.toLowerCase();
+        const matName = child.material.name.toLowerCase();
+
+        if (child.name.indexOf("PROXY") != -1) {
+            child.material.visible = false;
+            self.proxy = child;
+        } else if (matName.includes("glass")) {
+            child.material.opacity = 0.1;
+            child.material.transparent = true;
+        } 
+        // ✅ STRONGER CONDITION: only hide if both names look like sky or dome
+        else if (
+            (meshName.includes("sky") || meshName.includes("dome") || meshName.includes("background")) &&
+            (matName.includes("sky") || matName.includes("dome") || matName.includes("background"))
+        ) {
+            console.log("✅ Hiding actual sky mesh:", child.name);
+            child.visible = false;
+        } else {
+            console.log("✅ Keeping mesh:", child.name);
+        }
     }
-}
+});
 
-
-					}
-				});
                        
                 const door1 = college.getObjectByName("LobbyShop_Door__1_");
                 const door2 = college.getObjectByName("LobbyShop_Door__2_");
