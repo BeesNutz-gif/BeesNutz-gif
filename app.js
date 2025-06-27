@@ -91,6 +91,8 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
           pmremGenerator.dispose();
 
           self.scene.environment = envMap;
+	  self.scene.background = envMap;
+
 
         }, undefined, (err)=>{
             console.error( 'An error occurred setting the environment');
@@ -130,11 +132,9 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 						}else if (child.material.name.indexOf('Glass')!=-1){
                             child.material.opacity = 0.1;
                             child.material.transparent = true;
-                        }else if (child.material.name.indexOf("SkyBox")!=-1){
-                            const mat1 = child.material;
-                            const mat2 = new THREE.MeshBasicMaterial({map: mat1.map});
-                            child.material = mat2;
-                            mat1.dispose();
+                       }else if (child.material.name.indexOf("SkyBox") != -1){
+    child.visible = false; // fully hide the skybox mesh from GLB
+
                         }
 					}
 				});
