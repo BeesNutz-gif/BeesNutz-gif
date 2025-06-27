@@ -149,7 +149,7 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
         toneMapped: false
     });
     child.material = mat2;
-    child.renderOrder = -1; // make sure it renders behind everything
+    child.renderOrder = -1; // ensure it's rendered behind everything
     mat1.dispose();
 }
 
