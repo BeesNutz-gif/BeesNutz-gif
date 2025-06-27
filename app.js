@@ -50,6 +50,9 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.outputEncoding = THREE.sRGBEncoding;
 		container.appendChild( this.renderer.domElement );
+		this.stats = new Stats();
+document.body.appendChild(this.stats.dom);
+
         this.setEnvironment();
 	
         window.addEventListener( 'resize', this.resize.bind(this) );
