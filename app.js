@@ -340,8 +340,8 @@ render( timestamp, frame ){
         this.immersive = this.renderer.xr.isPresenting;
     }
 
-    // ✅ PATCHED: prevent stats update crash if canvas size is 0
-    if (this.stats.dom && (this.stats.dom.width === 0 || this.stats.dom.height === 0)) return;
+   if (this.stats.dom && (this.stats.dom.clientWidth === 0 || this.stats.dom.clientHeight === 0)) return;
+
 
     this.stats.update();
     this.renderer.render(this.scene, this.camera);
