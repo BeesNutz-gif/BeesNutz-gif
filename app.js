@@ -328,27 +328,28 @@ resize(){
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-render( timestamp, frame ){
-    const dt = this.clock.getDelta();
+render(timestamp, frame) {
+  const dt = this.clock.getDelta();
 
-    if (this.renderer.xr.isPresenting){
-        // your VR logic here
-    }
+  if (this.renderer.xr.isPresenting) {
+    // your VR logic here
+  }
 
-    if ( this.immersive != this.renderer.xr.isPresenting){
-        this.resize();
-        this.immersive = this.renderer.xr.isPresenting;
-    }
+  if (this.immersive !== this.renderer.xr.isPresenting) {
+    this.resize();
+    this.immersive = this.renderer.xr.isPresenting;
+  }
 
-    // Check canvas size before update to avoid InvalidStateError
-    const statsCanvas = this.stats.dom.querySelector('canvas');
-    if (!statsCanvas || statsCanvas.width === 0 || statsCanvas.height === 0) {
-        // Skip updating stats if canvas size is zero
-        return;
-    }
+  // Get the canvas inside stats.dom — it is usually the only canvas child element
+  const statsCanvas = this.stats.dom.querySelector('canvas');
 
+  // Only update stats if the canvas is present and non-zero sized
+  if (statsCanvas && statsCanvas.width > 0 && statsCanvas.height > 0) {
     this.stats.update();
-    this.renderer.render(this.scene, this.camera);
+  }
+
+  // Always render your scene regardless of stats update
+  this.renderer.render(this.scene, this.camera);
 }
 }
 
