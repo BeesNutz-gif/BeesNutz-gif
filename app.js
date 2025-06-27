@@ -80,7 +80,7 @@ fetch('./college.json')
     });
 
 
-    setEnvironment(){
+    
         const loader = new RGBELoader().setDataType( THREE.UnsignedByteType );
         const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
         pmremGenerator.compileEquirectangularShader();
