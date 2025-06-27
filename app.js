@@ -139,19 +139,20 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 						}else if (child.material.name.indexOf('Glass')!=-1){
                             child.material.opacity = 0.1;
                             child.material.transparent = true;
-                       }else if (child.material.name.indexOf("SkyBox") != -1){
+                       }else if (child.material.name.indexOf("SkyBox") !== -1){
     const mat1 = child.material;
     const mat2 = new THREE.MeshBasicMaterial({
         map: mat1.map,
         side: THREE.BackSide,
         fog: false,
         depthWrite: false,
-        toneMapped: false
+        toneMapped: true
     });
     child.material = mat2;
-    child.renderOrder = -1; // ensure it's rendered behind everything
+    child.renderOrder = -1;
     mat1.dispose();
 }
+ }					
 
                        
                const door1 = college.getObjectByName("LobbyShop_Door__1_");
