@@ -85,12 +85,22 @@ class App {
         loader.setDRACOLoader(dracoLoader);
 
         loader.load('college.glb', (gltf) => {
-            if (!gltf.scene || gltf.scene.children.length === 0) {
+            if (!gltf.scene || !gltf.scene.children || gltf.scene.children.length === 0) {
                 console.error("❌ GLB file loaded but has no children.");
                 return;
             }
 
-            const college = gltf.scene.children[0];
+            let college = null;
+            gltf.scene.traverse(obj => {
+                if (!college && obj.type === 'Group') {
+                    college = obj;
+                }
+            });
+
+            if (!college) {
+                console.error("❌ Could not find the 'college' object in the GLB file.");
+                return;
+            }
 
             college.traverse(obj => {
                 const name = obj.name.toLowerCase();
@@ -108,7 +118,7 @@ class App {
                     const meshName = child.name.toLowerCase();
                     const matName = child.material.name.toLowerCase();
 
-                    if (child.name.indexOf("PROXY") != -1) {
+                    if (child.name.indexOf("PROXY") !== -1) {
                         child.material.visible = false;
                         this.proxy = child;
                     } else if (matName.includes("glass")) {
@@ -145,7 +155,7 @@ class App {
             this.loadingBar.progress = (xhr.loaded / xhr.total);
         },
         (error) => {
-            console.error('An error happened while loading college.glb:', error);
+            console.error('❌ Error loading college.glb:', error);
         });
     }
 
