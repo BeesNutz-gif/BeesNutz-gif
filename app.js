@@ -139,14 +139,17 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 						}else if (child.material.name.indexOf('Glass')!=-1){
                             child.material.opacity = 0.1;
                             child.material.transparent = true;
-                        }else if (child.material.name.indexOf("SkyBox")!=-1){
-                            const mat1 = child.material;
-                            const mat2 = new THREE.MeshBasicMaterial({map: mat1.map});
-                            child.material = mat2;
-                            mat1.dispose();
-                        }
-					}
-				});
+                       } else if (child.material.name.indexOf("SkyBox") != -1) {
+	const mat1 = child.material;
+	const mat2 = new THREE.MeshBasicMaterial({
+		map: mat1.map,
+		side: THREE.BackSide,
+		fog: false
+	});
+	child.material = mat2;
+	mat1.dispose();
+}
+
                        
                const door1 = college.getObjectByName("LobbyShop_Door__1_");
 const door2 = college.getObjectByName("LobbyShop_Door__2_");
