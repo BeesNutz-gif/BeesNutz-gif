@@ -41,7 +41,9 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
   sound.setBuffer(buffer);
   sound.setLoop(true);
   sound.setVolume(0.3);
-  sound.play();
+});
+		document.body.addEventListener('click', () => {
+  if (!sound.isPlaying) sound.play();
 });
 
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
