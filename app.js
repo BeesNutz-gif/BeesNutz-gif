@@ -92,7 +92,7 @@ class App{
 	loader.load('college.glb', function (gltf) {
 		const college = gltf.scene.children[0];
 
-		// ☢️ Hard remove any sky/dome/background object
+		// ☢️ Kill sky meshes completely
 		college.traverse(obj => {
 			const name = obj.name.toLowerCase();
 			if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
@@ -101,7 +101,7 @@ class App{
 			}
 		});
 
-		// Optional: confirm what's still in the scene
+		// Optional debug log
 		college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
 
 		self.scene.add(college);
@@ -110,24 +110,17 @@ class App{
 			if (child.isMesh) {
 				const meshName = child.name.toLowerCase();
 				const matName = child.material.name.toLowerCase();
-
 				if (child.name.indexOf("PROXY") != -1) {
 					child.material.visible = false;
 					self.proxy = child;
-
 				} else if (matName.includes("glass")) {
 					child.material.opacity = 0.1;
 					child.material.transparent = true;
-
-				} else if (
-					(meshName.includes("sky") || meshName.includes("dome") || meshName.includes("background")) &&
-					(matName.includes("sky") || matName.includes("dome") || matName.includes("background"))
-				) {
-					child.visible = false; // Shouldn't matter anymore, but just in case
 				}
 			}
 		});
 
+		// Re-add door + proxy logic
 		const door1 = college.getObjectByName("LobbyShop_Door__1_");
 		const door2 = college.getObjectByName("LobbyShop_Door__2_");
 		const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
@@ -136,12 +129,11 @@ class App{
 		obj.position.copy(pos);
 		college.add(obj);
 
-		// 🚫 Add invisible wall
 		const doorBlock = new THREE.Mesh(
 			new THREE.BoxGeometry(2, 2, 0.2),
 			new THREE.MeshBasicMaterial({ visible: false })
 		);
-		doorBlock.position.set(1, 1, -3); // Adjust as needed
+		doorBlock.position.set(1, 1, -3);
 		doorBlock.name = "NoEntryWall";
 		self.scene.add(doorBlock);
 		self.proxy = doorBlock;
@@ -155,6 +147,7 @@ class App{
 		console.log('An error happened');
 	});
 }
+
 
 
             const door1 = college.getObjectByName("LobbyShop_Door__1_");
