@@ -92,7 +92,7 @@ class App{
 	loader.load('college.glb', function (gltf) {
 		const college = gltf.scene.children[0];
 
-		// ☢️ Kill sky meshes completely
+		// ☢️ Remove sky/dome/background objects by name
 		college.traverse(obj => {
 			const name = obj.name.toLowerCase();
 			if (name.includes("sky") || name.includes("dome") || name.includes("background")) {
@@ -101,15 +101,18 @@ class App{
 			}
 		});
 
-		// Optional debug log
+		// Optional: log all remaining objects
 		college.traverse(obj => console.log(`[${obj.type}] ${obj.name} | visible: ${obj.visible}`));
 
+		// Add the college to the scene
 		self.scene.add(college);
 
+		// Material tweaks
 		college.traverse(function (child) {
 			if (child.isMesh) {
 				const meshName = child.name.toLowerCase();
 				const matName = child.material.name.toLowerCase();
+
 				if (child.name.indexOf("PROXY") != -1) {
 					child.material.visible = false;
 					self.proxy = child;
@@ -120,15 +123,19 @@ class App{
 			}
 		});
 
-		// Re-add door + proxy logic
+		// Add LobbyShop interaction anchor
 		const door1 = college.getObjectByName("LobbyShop_Door__1_");
 		const door2 = college.getObjectByName("LobbyShop_Door__2_");
-		const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
-		const obj = new THREE.Object3D();
-		obj.name = "LobbyShop";
-		obj.position.copy(pos);
-		college.add(obj);
 
+		if (door1 && door2) {
+			const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
+			const obj = new THREE.Object3D();
+			obj.name = "LobbyShop";
+			obj.position.copy(pos);
+			college.add(obj);
+		}
+
+		// Add invisible wall to block exit
 		const doorBlock = new THREE.Mesh(
 			new THREE.BoxGeometry(2, 2, 0.2),
 			new THREE.MeshBasicMaterial({ visible: false })
@@ -144,38 +151,10 @@ class App{
 	}, function (xhr) {
 		self.loadingBar.progress = (xhr.loaded / xhr.total);
 	}, function (error) {
-		console.log('An error happened');
+		console.error('An error happened while loading college.glb:', error);
 	});
 }
 
-
-
-            const door1 = college.getObjectByName("LobbyShop_Door__1_");
-            const door2 = college.getObjectByName("LobbyShop_Door__2_");
-            const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
-            const obj = new THREE.Object3D();
-            obj.name = "LobbyShop";
-            obj.position.copy(pos);
-            college.add(obj);
-
-            // 🚫 Add invisible wall
-            const doorBlock = new THREE.Mesh(
-              new THREE.BoxGeometry(2, 2, 0.2),
-              new THREE.MeshBasicMaterial({ visible: false })
-            );
-            doorBlock.position.set(1, 1, -3); // Change to match entrance
-            doorBlock.name = "NoEntryWall";
-            self.scene.add(doorBlock);
-            self.proxy = doorBlock;
-
-            self.loadingBar.visible = false;
-            self.setupXR();
-		}, function ( xhr ) {
-			self.loadingBar.progress = (xhr.loaded / xhr.total);
-		}, function ( error ) {
-			console.log( 'An error happened' );
-		});
-	}
 
     setupXR(){
         this.renderer.xr.enabled = true;
