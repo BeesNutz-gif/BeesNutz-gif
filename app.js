@@ -322,7 +322,7 @@ if (door1 && door2) {
         this.boardShown = name;
     }
 
-}
+
 
 	resize(){
 		this.camera.aspect = window.innerWidth / window.innerHeight;
