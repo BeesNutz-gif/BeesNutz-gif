@@ -151,7 +151,7 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
             });
 
            //deleted
-			},
+			
 			// called while loading is progressing
 			function ( xhr ) {
 
