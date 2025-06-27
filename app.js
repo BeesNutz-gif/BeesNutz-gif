@@ -46,43 +46,40 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 });
 
 		this.renderer = new THREE.WebGLRenderer({ antialias: true });
-		this.renderer.setPixelRatio( window.devicePixelRatio );
-		this.renderer.setSize( window.innerWidth, window.innerHeight );
-		this.renderer.outputEncoding = THREE.sRGBEncoding;
-		container.appendChild( this.renderer.domElement );
-		this.stats = new Stats();
+this.renderer.setPixelRatio(window.devicePixelRatio);
+this.renderer.setSize(window.innerWidth, window.innerHeight);
+this.renderer.outputEncoding = THREE.sRGBEncoding;
+container.appendChild(this.renderer.domElement);
+
+// ✅ Only this one stats setup
+this.stats = new Stats();
+this.stats.dom.style.position = 'absolute';
+this.stats.dom.style.top = '0px';
+this.stats.dom.style.left = '0px';
 document.body.appendChild(this.stats.dom);
 
-        this.setEnvironment();
-	
-        window.addEventListener( 'resize', this.resize.bind(this) );
-        
-        this.clock = new THREE.Clock();
-        this.up = new THREE.Vector3(0,1,0);
-        this.origin = new THREE.Vector3();
-        this.workingVec3 = new THREE.Vector3();
-        this.workingQuaternion = new THREE.Quaternion();
-        this.raycaster = new THREE.Raycaster();
-        
-        this.stats = new Stats();
-		container.appendChild( this.stats.dom );
-        
-		this.loadingBar = new LoadingBar();
-		
-		this.loadCollege();
-        
-        this.immersive = false;
-        
-        const self = this;
-        
-        fetch('./college.json')
-            .then(response => response.json())
-            .then(obj =>{
-                self.boardShown = '';
-                self.boardData = obj;
-            });
-	}
-	
+		this.setEnvironment();
+window.addEventListener('resize', this.resize.bind(this));
+
+this.clock = new THREE.Clock();
+this.up = new THREE.Vector3(0, 1, 0);
+this.origin = new THREE.Vector3();
+this.workingVec3 = new THREE.Vector3();
+this.workingQuaternion = new THREE.Quaternion();
+this.raycaster = new THREE.Raycaster();
+
+this.loadingBar = new LoadingBar();
+this.loadCollege();
+this.immersive = false;
+
+fetch('./college.json')
+    .then(response => response.json())
+    .then(obj => {
+        this.boardShown = '';
+        this.boardData = obj;
+    });
+
+
     setEnvironment(){
         const loader = new RGBELoader().setDataType( THREE.UnsignedByteType );
         const pmremGenerator = new THREE.PMREMGenerator( this.renderer );
