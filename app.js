@@ -94,9 +94,10 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 	  self.scene.background = envMap;
 
 
-        }, undefined, (err)=>{
-            console.error( 'An error occurred setting the environment');
-        } );
+        console.log("✅ HDR loaded successfully");
+}, undefined, (err)=>{
+    console.error( '❌ HDR failed to load:', err );
+});
     }
     
     resize(){
@@ -132,10 +133,11 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 						}else if (child.material.name.indexOf('Glass')!=-1){
                             child.material.opacity = 0.1;
                             child.material.transparent = true;
-                       }else if (child.material.name.indexOf("SkyBox") != -1){
-    child.visible = false; // fully hide the skybox mesh from GLB
+                       }else if (child.material.name.toLowerCase().includes("sky")){
+    console.log("⚠️ Hiding mesh:", child.name);
+    child.visible = false;
+}
 
-                        }
 					}
 				});
                        
