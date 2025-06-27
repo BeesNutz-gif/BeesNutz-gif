@@ -26,10 +26,10 @@ class App{
 	this.dummyCam = new THREE.Object3D();
 	this.camera.add(this.dummyCam);
 	
-	//this.scene = new THREE.Scene();
-	//this.scene.add(this.dolly);
+	this.scene = new THREE.Scene();
+	this.scene.add(this.dolly);
 //fog
-this.scene.fog = new THREE.Fog(0xaaaaaa, 30, 120);
+//this.scene.fog = new THREE.Fog(0xaaaaaa, 30, 120);
 
 		//Cool Sci-Fi Tone
 	const ambient = new THREE.HemisphereLight(0x88ccff, 0x222244, 1.0); 
@@ -113,49 +113,67 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
 
 
 	loadCollege(){
-        
-		const loader = new GLTFLoader( ).setPath(this.assetsPath);
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath( './libs/three/js/draco/' );
-        loader.setDRACOLoader( dracoLoader );
-        
-        const self = this;
-		
-		// Load a glTF resource
-		loader.load(
-			// resource URL
-			'college.glb',
-			// called when the resource is loaded
-			function ( gltf ) {
+    const loader = new GLTFLoader().setPath(this.assetsPath);
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('./libs/three/js/draco/');
+    loader.setDRACOLoader(dracoLoader);
 
-                const college = gltf.scene.children[0];
-				self.scene.add( college );
-				
-				college.traverse(function (child) {
-    				if (child.isMesh){
-						if (child.name.indexOf("PROXY")!=-1){
-							child.material.visible = false;
-							self.proxy = child;
-						}else if (child.material.name.indexOf('Glass')!=-1){
-                            child.material.opacity = 0.1;
-                            child.material.transparent = true;
-                       }else if (child.material.name.indexOf("SkyBox") !== -1){
-    const mat1 = child.material;
-    const mat2 = new THREE.MeshBasicMaterial({
-        map: mat1.map,
-        side: THREE.BackSide,
-        fog: false,
-        depthWrite: false,
-        toneMapped: true
-    });
-    child.material = mat2;
-    child.renderOrder = -1;
-    mat1.dispose();
+    const self = this;
+
+    loader.load(
+        'college.glb',
+        function (gltf) {
+            const college = gltf.scene.children[0];
+            self.scene.add(college);
+
+            college.traverse(function (child) {
+                if (child.isMesh){
+                    if (child.name.indexOf("PROXY") !== -1){
+                        child.material.visible = false;
+                        self.proxy = child;
+                    } else if (child.material.name.indexOf('Glass') !== -1){
+                        child.material.opacity = 0.1;
+                        child.material.transparent = true;
+                    } else if (child.material.name.indexOf("SkyBox") !== -1){
+                        const mat1 = child.material;
+                        const mat2 = new THREE.MeshBasicMaterial({
+                            map: mat1.map,
+                            side: THREE.BackSide,
+                            fog: false,
+                            depthWrite: false,
+                            toneMapped: true
+                        });
+                        child.material = mat2;
+                        child.renderOrder = -1;
+                        mat1.dispose();
+                    }
+                }
+            });
+
+            const door1 = college.getObjectByName("LobbyShop_Door__1_");
+            const door2 = college.getObjectByName("LobbyShop_Door__2_");
+
+            if (door1 && door2) {
+                const pos = door1.position.clone().sub(door2.position).multiplyScalar(0.5).add(door2.position);
+                const obj = new THREE.Object3D();
+                obj.name = "LobbyShop";
+                obj.position.copy(pos);
+                college.add(obj);
+            }
+
+            self.loadingBar.visible = false;
+            self.setupXR();
+        },
+        // onProgress callback
+        function (xhr) {
+            self.loadingBar.progress = (xhr.loaded / xhr.total);
+        },
+        // onError callback
+        function (error) {
+            console.log('An error happened', error);
+        }
+    );
 }
-     }
-  }
-});
-
 
                        
                const door1 = college.getObjectByName("LobbyShop_Door__1_");
