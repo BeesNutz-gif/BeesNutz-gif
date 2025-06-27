@@ -152,7 +152,8 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
     child.renderOrder = -1;
     mat1.dispose();
 }
- }					
+ }
+});
 
                        
                const door1 = college.getObjectByName("LobbyShop_Door__1_");
