@@ -312,67 +312,65 @@ if (door1 && door2) {
     
     showInfoboard( name, info, pos ){
         if (this.ui === undefined ) return;
-        this.ui.position.copy(pos).add( this.workingVec3.set( 0, 1.3, 0 ) );
-        const camPos = this.dummyCam.getWorldPosition( this.workingVec3 );
-        this.ui.updateElement( 'name', info.name );
-        this.ui.updateElement( 'info', info.info );
-        this.ui.update();
-        this.ui.lookAt( camPos )
-        this.ui.visible = true;
-        this.boardShown = name;
+    this.ui.position.copy(pos).add( this.workingVec3.set( 0, 1.3, 0 ) );
+    const camPos = this.dummyCam.getWorldPosition( this.workingVec3 );
+    this.ui.updateElement( 'name', info.name );
+    this.ui.updateElement( 'info', info.info );
+    this.ui.update();
+    this.ui.lookAt( camPos )
+    this.ui.visible = true;
+    this.boardShown = name;
+}
+
+resize(){
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+render( timestamp, frame ){
+    const dt = this.clock.getDelta();
+    
+    if (this.renderer.xr.isPresenting){
+        let moveGaze = false;
+
+        if ( this.useGaze && this.gazeController!==undefined){
+            this.gazeController.update();
+            moveGaze = (this.gazeController.mode == GazeController.Modes.MOVE);
+        }
+
+        if (this.selectPressed || moveGaze){
+            this.moveDolly(dt);
+            if (this.boardData){
+                const scene = this.scene;
+                const dollyPos = this.dolly.getWorldPosition( new THREE.Vector3() );
+                let boardFound = false;
+                Object.entries(this.boardData).forEach(([name, info]) => {
+                    const obj = scene.getObjectByName( name );
+                    if (obj !== undefined){
+                        const pos = obj.getWorldPosition( new THREE.Vector3() );
+                        if (dollyPos.distanceTo( pos ) < 3){
+                            boardFound = true;
+                            if ( this.boardShown !== name) this.showInfoboard( name, info, pos );
+                        }
+                    }
+                });
+                if (!boardFound){
+                    this.boardShown = "";
+                    this.ui.visible = false;
+                }
+            }
+        }
     }
 
+    if ( this.immersive != this.renderer.xr.isPresenting){
+        this.resize();
+        this.immersive = this.renderer.xr.isPresenting;
+    }
 
-
-	resize(){
-		this.camera.aspect = window.innerWidth / window.innerHeight;
-		this.camera.updateProjectionMatrix();
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
-	}
-
-	render( timestamp, frame ){
-		const dt = this.clock.getDelta();
-		
-		if (this.renderer.xr.isPresenting){
-			let moveGaze = false;
-		
-			if ( this.useGaze && this.gazeController!==undefined){
-				this.gazeController.update();
-				moveGaze = (this.gazeController.mode == GazeController.Modes.MOVE);
-			}
-		
-			if (this.selectPressed || moveGaze){
-				this.moveDolly(dt);
-				if (this.boardData){
-					const scene = this.scene;
-					const dollyPos = this.dolly.getWorldPosition( new THREE.Vector3() );
-					let boardFound = false;
-					Object.entries(this.boardData).forEach(([name, info]) => {
-						const obj = scene.getObjectByName( name );
-						if (obj !== undefined){
-							const pos = obj.getWorldPosition( new THREE.Vector3() );
-							if (dollyPos.distanceTo( pos ) < 3){
-								boardFound = true;
-								if ( this.boardShown !== name) this.showInfoboard( name, info, pos );
-							}
-						}
-					});
-					if (!boardFound){
-						this.boardShown = "";
-						this.ui.visible = false;
-					}
-				}
-			}
-		}
-		
-		if ( this.immersive != this.renderer.xr.isPresenting){
-			this.resize();
-			this.immersive = this.renderer.xr.isPresenting;
-		}
-		
-		this.stats.update();
-		this.renderer.render(this.scene, this.camera);
-	}
+    this.stats.update();
+    this.renderer.render(this.scene, this.camera);
+}
 }
 
 export { App };
