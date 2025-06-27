@@ -84,7 +84,7 @@ audioLoader.load('music.mp3.mp3', (buffer) => {
         
         const self = this;
         
-        loader.load( './assets/hdr/venice_sunset_1k.hdr', ( texture ) => {
+        loader.load( './assets/hdr/new_sky.hdr', ( texture ) => {
           const envMap = pmremGenerator.fromEquirectangular( texture ).texture;
           pmremGenerator.dispose();
 
