@@ -28,6 +28,8 @@ class App{
 	
 	this.scene = new THREE.Scene();
 	this.scene.add(this.dolly);
+//fog
+this.scene.fog = new THREE.Fog(0xaaaaaa, 10, 50);
 
 	const ambient = new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.8);
 	this.scene.add(ambient);
@@ -312,6 +314,9 @@ if (door1 && door2) {
         if (intersect.length>0){
             this.dolly.position.copy( intersect[0].point );
         }
+
+	// Slight head bob effect
+        this.camera.position.y = 1.6 + Math.sin(performance.now() * 0.005) * 0.02;    
 
         //Restore the original rotation
         this.dolly.quaternion.copy( quaternion );
